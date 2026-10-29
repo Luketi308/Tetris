@@ -23,6 +23,9 @@ public class PlayManager {
     final int MINO_START_X;
     final int MINO_START_Y;
     
+    //otros
+    public static int dropInterval = 60;
+    
     //area de juego principal frame
     public PlayManager(){
     left_x = (GamePanel.WIDTH/2) - (WIDTH/2);// 1280/2 - 360/2 = 460    
@@ -36,7 +39,7 @@ public class PlayManager {
     currentMino.setXY(MINO_START_X, MINO_START_Y);
     }
     public void update(){
-        
+        currentMino.update();
     }
     public void draw(Graphics2D g2){
         //dibuja el frame del area de juego
@@ -51,5 +54,9 @@ public class PlayManager {
         g2.setFont(new Font("Arial", Font.PLAIN, 30));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.drawString("SIGUIENTE", x+20, y+60); 
+        //dibuja currentMino
+        if(currentMino != null){
+            currentMino.draw(g2);
+        } 
     }
 }
