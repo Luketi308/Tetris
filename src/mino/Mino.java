@@ -10,7 +10,7 @@ public class Mino {
     public Block tempB[] = new Block [4];
     int autoDropCounter = 0;
     public int direction = 1;
-    
+    boolean leftCollision, rightCollision, bottomCollision;
     
     public void create (Color c) {
         b[0] = new Block (c);
@@ -40,6 +40,12 @@ public class Mino {
     public void getDirection2(){}
     public void getDirection3(){}
     public void getDirection4(){}
+    public void checkMovementCollision () {
+     leftCollision = false;
+     rightCollision = false;
+    
+    }
+    public void checkRotationCollision () {}
     public void update () {
         
         //mueve el mino
