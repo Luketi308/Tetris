@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
 import java.util.Random;
 import mino.Block;
 import mino.Mino;
@@ -29,6 +30,10 @@ public class PlayManager {
     Mino currentMino;
     final int MINO_START_X;
     final int MINO_START_Y;
+    Mino nextMino;
+    final int NEXTMINO_X;
+    final int NEXTMINO_Y;
+    public static ArrayList<Block> statickBlocks = new ArrayList<>();
     
     //otros
     public static int dropInterval = 60;
@@ -41,9 +46,14 @@ public class PlayManager {
     bottom_y = top_y + HEIGHT;
     MINO_START_X = left_x +(WIDTH/2) - Block.SIZE;
     MINO_START_Y = top_y + Block.SIZE;
+    
+    NEXTMINO_X = right_x +175;
+    NEXTMINO_Y = top_y +500;
     //Establece el inicio del Mino
     currentMino = pickMino();
     currentMino.setXY(MINO_START_X, MINO_START_Y);
+    nextMino = pickMino();
+    nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
     
     private Mino pickMino(){
@@ -64,7 +74,20 @@ public class PlayManager {
         return mino;
     }
     public void update(){
-        currentMino.update();
+        
+        // Check if the currentMino is active
+        if(currentMino.active == false) {
+        // if the mino is not active, put it into staticblocks
+        statickBlocks.add(currentMino.b[0]);
+        statickBlocks.add(currentMino.b[1]);
+        statickBlocks.add(currentMino.b[2]);
+        statickBlocks.add(currentMino.b[3]);
+        }
+        else {
+             currentMino.update();
+        }
+        
+       
     }
     public void draw(Graphics2D g2){
         //dibuja el frame del area de juego
@@ -82,6 +105,17 @@ public class PlayManager {
         //dibuja currentMino
         if(currentMino != null){
             currentMino.draw(g2);
-        } 
+        }
+        // Draw the nextMino
+        nextMino.draw(g2);
+        
+        //Draw Pause
+        g2.setColor(Color.yellow);
+        g2.setFont(g2.getFont().deriveFont(50f));
+        if (KeyHandler.pausePressed) {
+            x = left_x + 70;
+            x = top_y + 500;
+            g2.drawString("PAUSA", x, y);
+        }
     }
 }
