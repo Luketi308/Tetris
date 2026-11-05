@@ -1,58 +1,15 @@
-
 package mino;
 
 import java.awt.Color;
 
-public class Mino_Z2 extends Mino{
+public class Mino_Z2 extends Mino {
+    // Por rotación: desplazamientos (dx, dy) en bloques de b[0] a b[3]; b[0] es el pivote
+    private static final int[][][] SHAPES = {
+        {{0, 0}, {0, -1}, {1, 0}, {1, 1}},
+        {{0, 0}, {1, 0}, {0, 1}, {-1, 1}},
+    };
+
     public Mino_Z2() {
-        create(Color.green);
-    }
-    public void setXY(int x, int y){
-        // º 
-        // º º
-        //   º
-        b[0].x = x;
-        b[0].y = y;
-        b[1].x = b[0].x;
-        b[1].y = b[0].y - Block.SIZE;
-        b[2].x = b[0].x + Block.SIZE;
-        b[2].y = b[0].y;
-        b[3].x = b[0].x + Block.SIZE; 
-        b[3].y = b[0].y + Block.SIZE;
-    }
-    public void getDirection1(){
-        // º 
-        // º º
-        //   º
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x;
-        tempB[1].y = b[0].y - Block.SIZE;
-        tempB[2].x = b[0].x + Block.SIZE;
-        tempB[2].y = b[0].y;
-        tempB[3].x = b[0].x + Block.SIZE;
-        tempB[3].y = b[0].y + Block.SIZE;
-        
-        updateXY(1);
-    }
-    public void getDirection2(){
-        //   º º
-        // º º
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x;
-        tempB[1].y = b[0].y - Block.SIZE;
-        tempB[2].x = b[0].x;
-        tempB[2].y = b[0].y - Block.SIZE;
-        tempB[3].x = b[0].x + Block.SIZE;
-        tempB[3].y = b[0].y - Block.SIZE;
-        
-        updateXY(2);
-    }
-    public void getDirection3(){
-        getDirection1();
-    }
-    public void getDirection4(){
-        getDirection2();
+        super(Color.green, SHAPES);
     }
 }

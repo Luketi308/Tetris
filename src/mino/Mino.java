@@ -5,163 +5,173 @@ import java.awt.Graphics2D;
 import main.KeyHandler;
 import main.PlayManager;
 
-public class Mino {
-    public Block b [] = new Block [4];
-    public Block tempB[] = new Block [4];
-    int autoDropCounter = 0;
-    public int direction = 1;
-    boolean leftCollision, rightCollision, bottomCollision;
+/**
+ * Pieza base. Cada subclase solo define su color y sus formas: una tabla
+ * [rotación][bloque][dx, dy] con los desplazamientos (en bloques) respecto al
+ * pivote b[0]. La rotación, las colisiones y el dibujo viven acá, una sola vez.
+ */
+public abstract class Mino {
+    public final Block[] b = new Block[4];
     public boolean active = true;
-    
-    public void create (Color c) {
-        b[0] = new Block (c);
-        b[1] = new Block (c);
-        b[2] = new Block (c);
-        b[3] = new Block (c);
-        tempB[0] = new Block (c);
-        tempB[1] = new Block (c);
-        tempB[2] = new Block (c);
-        tempB[3] = new Block (c);
-    }
-    public void setXY(int x,int y) {}
-    public void updateXY(int direction){
-        checkRotationCollision();
-        if(leftCollision == false && rightCollision == false && bottomCollision == false) {
-            
-        this.direction = direction;
-        b[0].x = tempB[0].x;
-        b[0].y = tempB[0].y;
-        b[1].x = tempB[1].x;
-        b[1].y = tempB[1].y;
-        b[2].x = tempB[2].x;
-        b[2].y = tempB[2].y;
-        b[3].x = tempB[3].x;
-        b[3].y = tempB[3].y;  
+
+    private final Block[] tempB = new Block[4]; // posición candidata al rotar
+    private final int[][][] shapes;
+    private int direction = 1;                  // rotación actual, de 1 a shapes.length
+    private int autoDropCounter = 0;
+    private boolean leftCollision, rightCollision, bottomCollision;
+    private boolean deactivating;
+    private int deactivateCounter = 0;
+
+    protected Mino(Color c, int[][][] shapes) {
+        this.shapes = shapes;
+        for (int i = 0; i < 4; i++) {
+            b[i] = new Block(c);
+            tempB[i] = new Block(c);
         }
-      
-        
     }
-    public void getDirection1(){}
-    public void getDirection2(){}
-    public void getDirection3(){}
-    public void getDirection4(){}
-    public void checkMovementCollision () {
-     leftCollision = false;
-     rightCollision = false;
-     bottomCollision = false;
-    
-     //check frame collision
-     //Left wall
-     for(int i = 0; i < b.length; i++) {
-         if(b[i].x == PlayManager.left_x){
-            leftCollision = true; 
-         }
+
+    /** Ubica la pieza con el pivote b[0] en (x, y), en su rotación actual. */
+    public void setXY(int x, int y) {
+        place(b, shapes[direction - 1], x, y);
     }
-     //Right wall
-         for(int i = 0; i < b.length; i++) {
-         if(b[i].x + Block.SIZE == PlayManager.right_x){
-            rightCollision = true; 
-         }
-     }
-         
-     //Bottom floor
-        for(int i = 0; i < b.length; i++) {
-        if(b[i].y + Block.SIZE == PlayManager.bottom_y){
-           bottomCollision = true; 
-         }
-     }
-    } 
-    public void checkRotationCollision () {
-    
-     //check frame collision
-     //Left wall
-     for(int i = 0; i < b.length; i++) {
-         if(tempB[i].x < PlayManager.left_x){
-            leftCollision = true; 
-         }
+
+    private static void place(Block[] target, int[][] shape, int px, int py) {
+        for (int i = 0; i < 4; i++) {
+            target[i].x = px + shape[i][0] * Block.SIZE;
+            target[i].y = py + shape[i][1] * Block.SIZE;
+        }
     }
-     //Right wall
-         for(int i = 0; i < b.length; i++) {
-         if(tempB[i].x + Block.SIZE > PlayManager.right_x){
-            rightCollision = true; 
-         }
-     }
-         
-     //Bottom floor
-        for(int i = 0; i < b.length; i++) {
-        if(tempB[i].y + Block.SIZE > PlayManager.bottom_y){
-           bottomCollision = true; 
-         }
-     }
-    
-    }
-    public void update () {
-        
-        //mueve el mino
-        if(KeyHandler.upPressed){
-            switch (direction) {
-                case 1: getDirection2();break;
-                case 2: getDirection3();break;
-                case 3: getDirection4();break;
-                case 4: getDirection1();break;
-                
+
+    /** true si los bloques están dentro del tablero y no pisan ningún bloque fijo. */
+    private static boolean fits(Block[] cells) {
+        for (Block c : cells) {
+            if (c.x < PlayManager.left_x
+                    || c.x + Block.SIZE > PlayManager.right_x
+                    || c.y + Block.SIZE > PlayManager.bottom_y) {
+                return false;
             }
+        }
+        for (Block s : PlayManager.staticBlocks) {
+            for (Block c : cells) {
+                if (c.x == s.x && c.y == s.y) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** true si la pieza, tal como está, pisa un bloque fijo o se sale del tablero. */
+    public boolean isBlocked() {
+        return !fits(b);
+    }
+
+    private void rotate() {
+        if (shapes.length == 1) {
+            return; // el cuadrado no cambia al rotar
+        }
+        int next = direction % shapes.length + 1;
+        place(tempB, shapes[next - 1], b[0].x, b[0].y);
+        if (fits(tempB)) {
+            direction = next;
+            for (int i = 0; i < 4; i++) {
+                b[i].x = tempB[i].x;
+                b[i].y = tempB[i].y;
+            }
+        }
+    }
+
+    private void move(int dx, int dy) {
+        for (Block blk : b) {
+            blk.x += dx;
+            blk.y += dy;
+        }
+    }
+
+    private void checkMovementCollision() {
+        leftCollision = false;
+        rightCollision = false;
+        bottomCollision = false;
+
+        // Paredes y piso
+        for (Block c : b) {
+            if (c.x == PlayManager.left_x) leftCollision = true;
+            if (c.x + Block.SIZE == PlayManager.right_x) rightCollision = true;
+            if (c.y + Block.SIZE == PlayManager.bottom_y) bottomCollision = true;
+        }
+        // Bloques fijos pegados a la pieza
+        for (Block s : PlayManager.staticBlocks) {
+            for (Block c : b) {
+                if (c.y + Block.SIZE == s.y && c.x == s.x) bottomCollision = true;
+                if (c.x - Block.SIZE == s.x && c.y == s.y) leftCollision = true;
+                if (c.x + Block.SIZE == s.x && c.y == s.y) rightCollision = true;
+            }
+        }
+    }
+
+    public void update() {
+        if (deactivating) {
+            lockDelay();
+        }
+
+        if (KeyHandler.upPressed) {
+            rotate();
             KeyHandler.upPressed = false;
         }
-        
-        checkMovementCollision ();
-        
-        if(KeyHandler.downPressed){
-            if( bottomCollision == false){
-                b[0].y += Block.SIZE;
-                b[1].y += Block.SIZE;
-                b[2].y += Block.SIZE;
-                b[3].y += Block.SIZE;
-            autoDropCounter = 0;
+
+        checkMovementCollision();
+
+        if (KeyHandler.downPressed) {
+            if (!bottomCollision) {
+                move(0, Block.SIZE);
+                autoDropCounter = 0;
+                PlayManager.score++; // 1 punto por cada fila bajada a mano
             }
             KeyHandler.downPressed = false;
         }
-        if(KeyHandler.leftPressed){
-            if(leftCollision == false){
-                b[0].x -= Block.SIZE;
-                b[1].x -= Block.SIZE;
-                b[2].x -= Block.SIZE;
-                b[3].x -= Block.SIZE;
+        if (KeyHandler.leftPressed) {
+            if (!leftCollision) {
+                move(-Block.SIZE, 0);
             }
             KeyHandler.leftPressed = false;
         }
-        if(KeyHandler.rightPressed){
-            if(rightCollision == false){
-            b[0].x += Block.SIZE;
-            b[1].x += Block.SIZE;
-            b[2].x += Block.SIZE;
-            b[3].x += Block.SIZE;
+        if (KeyHandler.rightPressed) {
+            if (!rightCollision) {
+                move(Block.SIZE, 0);
             }
             KeyHandler.rightPressed = false;
         }
-        if (bottomCollision){
-            active = false;
-        }
-        else{
+
+        if (bottomCollision) {
+            deactivating = true;
+        } else {
             autoDropCounter++;
-            if(autoDropCounter == PlayManager.dropInterval){
-                b[0].y += Block.SIZE;
-                b[1].y += Block.SIZE;
-                b[2].y += Block.SIZE;
-                b[3].y += Block.SIZE;
+            // >= y no ==: si dropInterval baja de nivel con el contador ya pasado, igual cae
+            if (autoDropCounter >= PlayManager.dropInterval) {
+                move(0, Block.SIZE);
                 autoDropCounter = 0;
             }
         }
-        
-        
     }
-    public void draw(Graphics2D g2){
-        int margin = 1;
-        g2.setColor(b[0].c);
-        g2.fillRect(b[0].x+margin, b[0].y+margin, Block.SIZE-(margin*2), Block.SIZE-(margin*2));
-        g2.fillRect(b[1].x+margin, b[1].y+margin, Block.SIZE-(margin*2), Block.SIZE-(margin*2));
-        g2.fillRect(b[2].x+margin, b[2].y+margin, Block.SIZE-(margin*2), Block.SIZE-(margin*2));
-        g2.fillRect(b[3].x+margin, b[3].y+margin, Block.SIZE-(margin*2), Block.SIZE-(margin*2));
-        
+
+    /** Margen de 45 frames para deslizar la pieza antes de que se fije. */
+    private void lockDelay() {
+        deactivateCounter++;
+
+        if (deactivateCounter == 45) {
+            deactivateCounter = 0;
+            checkMovementCollision();
+            if (bottomCollision) {
+                active = false;
+            } else {
+                deactivating = false; // ya no toca abajo: se cancela la fijación
+            }
+        }
+    }
+
+    public void draw(Graphics2D g2) {
+        for (Block blk : b) {
+            blk.draw(g2);
+        }
     }
 }

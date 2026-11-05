@@ -1,91 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package mino;
 
 import java.awt.Color;
 
-/**
- *
- * @author Sala 2 - 3
- */
-public class Mino_L1 extends Mino{
+public class Mino_L1 extends Mino {
+    // Por rotación: desplazamientos (dx, dy) en bloques de b[0] a b[3]; b[0] es el pivote
+    private static final int[][][] SHAPES = {
+        {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
+        {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}},
+        {{0, 0}, {0, 1}, {0, -1}, {-1, -1}},
+        {{0, 0}, {-1, 0}, {1, 0}, {1, -1}},
+    };
+
     public Mino_L1() {
-        create(Color.orange);
-    }
-    public void setXY(int x, int y){
-        b[0].x = x;
-        b[0].y = y;
-        b[1].x = b[0].x;
-        b[1].y = b[0].y - Block.SIZE;
-        b[2].x = b[0].x;
-        b[2].y = b[0].y + Block.SIZE;
-        b[3].x = b[0].x + Block.SIZE;
-        b[3].y = b[0].y + Block.SIZE;
-    }
-    public void getDirection1(){
-        // º
-        // º
-        // º º
-        
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x;
-        tempB[1].y = b[0].y - Block.SIZE;
-        tempB[2].x = b[0].x;
-        tempB[2].y = b[0].y + Block.SIZE;
-        tempB[3].x = b[0].x + Block.SIZE;
-        tempB[3].y = b[0].y + Block.SIZE;
-        
-        updateXY(1);
-    }
-    public void getDirection2(){
-        //
-        // º º º
-        // º
-        
-         
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x + Block.SIZE;
-        tempB[1].y = b[0].y;
-        tempB[2].x = b[0].x - Block.SIZE;
-        tempB[2].y = b[0].y;
-        tempB[3].x = b[0].x - Block.SIZE;
-        tempB[3].y = b[0].y + Block.SIZE;
-        
-        updateXY(2);
-    }
-    public void getDirection3(){
-        // º º
-        //   º
-        //   º
-        
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x;
-        tempB[1].y = b[0].y + Block.SIZE;
-        tempB[2].x = b[0].x;
-        tempB[2].y = b[0].y - Block.SIZE;
-        tempB[3].x = b[0].x - Block.SIZE;
-        tempB[3].y = b[0].y - Block.SIZE;
-        
-        updateXY(3);
-    }
-    public void getDirection4(){
-        //     º
-        // º º º
-        //
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x - Block.SIZE;
-        tempB[1].y = b[0].y; 
-        tempB[2].x = b[0].x + Block.SIZE;
-        tempB[2].y = b[0].y;
-        tempB[3].x = b[0].x + Block.SIZE;
-        tempB[3].y = b[0].y - Block.SIZE;
-        
-        updateXY(4);
+        super(Color.orange, SHAPES);
     }
 }
