@@ -60,4 +60,4 @@ Lo armamos de esta manera:
 
 ## ¿Quién lo hizo?
 
-Lo hicimos Luca Lafuente y Alexis Gómez.
+Lo hicimos Lucas Lafuente y Alexis Gómez.
